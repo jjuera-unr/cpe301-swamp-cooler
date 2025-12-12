@@ -5,7 +5,7 @@
 #include <DHT.h>
 #include <Wire.h>
 #include <RTClib.h>
-//#include <Stepper.h>
+#include <Stepper.h>
 
 /** Register definitions **/
 
@@ -77,11 +77,16 @@ struct Pin {
   }
 };
 
-//Stepper stepper(2048, 8, 10, 9, 11);
 DHT dht(49, DHT11);
 LiquidCrystal lcd(28, 29, 26, 27, 24, 25);
 
-// 
+const int STEPS_PER_REVOLUTION = 2048;
+//Stepper stepper(STEPS_PER_REVOLUTION, 8, 9, 10, 11);
+// change the pinout of 8 9 10 11 -> 8 10 9 11 because of this:
+// https://www.reddit.com/r/arduino/comments/y95cfz/programming_a_28byj48_step_motor_it_seems_to/
+// in addition, using 256 instead of 2048 makes the stepper rotate better for
+// some reason, even though 2048 is the correct value
+Stepper stepper(256, 8, 10, 9, 11);
 
 // LEDs connected to pins 50-53
 Pin redLed(PORT_B, DDR_B, 3);
@@ -99,10 +104,9 @@ float temperatureThreshold = 25;
 int humidity;
 int waterLevel;
 int waterLevelThreshold = 120;
-int ventStep = 0;
+int ventStep = STEPS_PER_REVOLUTION / 8; // 45 degree vent movement
 
 RTC_DS1307 rtc;
-
 
 // 1 minute delay for LCD update
 unsigned long lastUpdate = 0;
@@ -148,6 +152,8 @@ void setup() {
   rtc.adjust(dt);
   U0puttimestamp(dt);
   U0putstr("RTC time adjusted.\n");
+
+  stepper.setSpeed(60);
 
   // interrupt
 	PCICR  |=  (1 << PCIE1);
@@ -213,16 +219,22 @@ void loopState() {
     case IDLE:
       if (startButton.get()) {
         enterState(DISABLED);
+        break;
       }
 
       // if water level is below threshold, go to ERROR
       if (waterLevel < waterLevelThreshold) {
         enterState(ERROR);
+        break;
       }
 
       // if temperature exceeds threshold, start running the motor
       if (temperature >= temperatureThreshold) {
         enterState(RUNNING);
+      }
+
+      if (ventButton.get()) {
+        toggleVent();
       }
 
       updateLCD();
@@ -232,16 +244,23 @@ void loopState() {
     case RUNNING:
       if (startButton.get()) {
         enterState(DISABLED);
+        break;
       }
 
       // if water level is below threshold, go to ERROR
       if (waterLevel < waterLevelThreshold) {
         enterState(ERROR);
+        break;
       }
 
       // if temperature drops below threshold, stop running
       if (temperature < temperatureThreshold) {
         enterState(IDLE);
+        break;
+      }
+
+      if (ventButton.get()) {
+        toggleVent();
       }
 
       updateLCD();
@@ -252,22 +271,41 @@ void loopState() {
       // button press to re-enable is handled in ISR
       if (startButton.get()) {
         enterState(IDLE);
+        break;
       }
       break;
 
     case ERROR:
       if (startButton.get()) {
         enterState(DISABLED);
+        break;
       }
 
       // if reset button is pressed, go back to IDLE
       if (resetButton.get()) {
         lastUpdate = 0; // force LCD update
         enterState(IDLE);
+        break;
+      }
+
+      if (ventButton.get()) {
+        toggleVent();
       }
 
       break;
   }
+}
+
+// forward declare so we can use default value
+void U0putint(int, int = 0);
+
+void toggleVent() {
+  stepper.step(ventStep);
+  U0puttimestamp(rtc.now());
+  U0putstr("Moving vent by ");
+  U0putint(ventStep);
+  U0putstr(" step(s)\n");
+  ventStep = -ventStep; // toggle between opening and closing
 }
 
 void stopMotor() {
@@ -315,7 +353,14 @@ void U0putstr(char *s) {
   }
 }
 
-void U0putint(int value, int leadingZeros = 0) {
+void U0putint(int value, int leadingZeros) {
+  // render negative numbers correctly by prepending negative sign and printing
+  // as positive
+  if (value < 0) {
+    U0putchar('-');
+    value = -value;
+  }
+
   const int digits[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
   int temp = value;
   int count = 0;
