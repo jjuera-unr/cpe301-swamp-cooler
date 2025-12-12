@@ -144,10 +144,10 @@ void setup() {
     while (1);
   }
 
-  if (!rtc.isrunning()) {
-    U0putstr("RTC is NOT running, setting the time!\n");
-    rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
-  }
+  DateTime dt = DateTime(F(__DATE__), F(__TIME__));
+  rtc.adjust(dt);
+  U0puttimestamp(dt);
+  U0putstr("RTC time adjusted.\n");
 
   // interrupt
 	PCICR  |=  (1 << PCIE1);
@@ -166,9 +166,7 @@ void loop() {
 
 void enterState(State newState) {
   // print state change
-  U0putchar('[');
   U0puttimestamp(rtc.now());
-  U0putchar(']');
   U0putstr(" STATE CHANGE: ");
   U0putstate(currentState);
   U0putstr(" -> ");
@@ -317,15 +315,28 @@ void U0putstr(char *s) {
   }
 }
 
-void U0putint(int value) {
+void U0putint(int value, int leadingZeros = 0) {
   const int digits[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
-  if (value == 0) {
-    U0putchar('0');
-    return;
+  int temp = value;
+  int count = 0;
+
+  // count number of digits for leading zeros
+  if (temp == 0) {
+      count = 1;
+  } else {
+      while (temp > 0) {
+          temp /= 10;
+          count++;
+      }
   }
-  
+
+  while (leadingZeros > count) {
+      U0putchar('0');
+      leadingZeros--;
+  }
+
   if (value >= 10) {
-    U0putint(value / 10);
+      U0putint(value / 10, 0);
   }
 
   U0putchar(digits[value % 10]);
@@ -350,11 +361,11 @@ void U0putstate(State state) {
 
 void U0puttimestamp(DateTime dt) {
   U0putchar('[');
-  U0putint(dt.hour());
+  U0putint(dt.hour(), 2);
   U0putchar(':');
-  U0putint(dt.minute());
+  U0putint(dt.minute(), 2);
   U0putchar(':');
-  U0putint(dt.second());
+  U0putint(dt.second(), 2);
   U0putchar(']');
   U0putchar(' ');
 }
