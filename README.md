@@ -3,7 +3,20 @@
 By Justin Juera <jjuera@unr.edu>
 
 This repository contains the code and documentation for the CPE 301 Swamp
-Cooler Project.
+Cooler Project. Swamp coolers are devices that cool air by evaporating water.
+Water has a high latent heat of vaporization, which means it can absorb a lot
+of heat from the air before turning into vapor. This makes swamp coolers an
+effective and energy-efficient way to cool indoor spaces, especially in dry
+climates where the humidity is low.
+
+The swamp cooler system in this project uses an Arduino Atmega2560 and various
+sensors and actuators (described in the section below) to monitor and control
+the operation of the swamp cooler.
+
+It can monitor temperature, humidity, and water level, and adjust the fan speed
+accordingly. It has an LCD screen to display the temperature and humidity of
+the past minute, as well as the current system status. It also logs data with
+timestamps using a real-time clock module through the serial monitor.
 
 If you are a student looking to study or reuse parts of this code, please read
 the License section at the bottom of this document.
@@ -101,14 +114,78 @@ Components used are described in the Components Used section above.
 
 ## System Demonstration
 
-Link will be provided soon.
+Below is a video demonstration of the swamp cooler system in operation:
 
-Addendum: the video demonstrates logging with real-time clock timestamps.
-However, it did not include the year/month/day. A new commit was added to
-include year/month/day in the log output. Here is an updated screenshot of the
-log output with the full date and time:
+<https://drive.google.com/file/d/1CNwVBzageFXINSoOLmAduGrb4Q404aej/view?usp=sharing>
+
+Addendum: the video demonstrates logging with real-time clock timestamps. It
+included hour/minute/second, but it did not include the year/month/day. A new
+commit was added to include year/month/day in the log output. Here is an
+updated screenshot of the log output with the full date and time:
 
 ![Updated Log Output](./images/addendum-datetime.png)
+
+## Environmental Impact
+
+### Energy Efficiency
+
+The swamp cooler system is designed to be energy efficient by only operating
+when the temperature exceeds a certain threshold and if there is sufficient
+water in the reservoir. This minimizes any unnecessary energy consumption.
+
+In addition, the fan speed is controlled by how much the temperature exceeds
+the threshold. This allows the system to adjust its cooling power based on the
+current environmental conditions, only using minimal power when the temperature
+is just above the threshold. This is seen in the `startMotor()` method in the
+source code.
+
+### Design Safety
+
+As described in the System Overview section, the motors are powered separately
+from the microcontroller using a separate power supply module. This design
+choice prevents damage to the microcontroller in case the motor power supply is
+turned off while the microcontroller is still powered.
+
+In addition, the error state requires manual intervention from the user to
+reset the system after a low water level condition is detected. This ensures
+that the user is aware of the water level issue.
+
+### Affordability
+
+The components used in this project are chosen to be affordable. The total cost
+of the kit containing all of the components used in this project is around
+\$60-\$70. This makes it accessible for hobbyists who want to replicate or build
+on this project.
+
+In addition, I reduced the number of components needed by reusing them for
+different but similar functions of the system. For example, the enable button
+is the same physical button as the disable button; it toggles the system state
+between enabled and disabled. By having the start/enable functionality be
+implemented as an ISR, the user can press the button to disable the system
+without worrying of holding the button too long and accidentally re-enabling
+it.
+
+The vent button also toggles the vent direction between two preset positions,
+which simplifies the two vent states into a single button.
+
+### Sustainability
+
+The design of the swamp cooler system emphasizes sustainability by using
+components that are widely available and can easily be replaced or upgraded.
+Especially because the water level sensor is at risk of corrosion over time due
+to constant exposure to water, it is important that the sensor can be easily
+replaced. The water sensor used in this project is an inexpensive analog water
+level detection sensor that can be easily swapped out if it fails, only
+requiring to reconnect the jumper wires. Any water sensor that provides an
+analog voltage output based on water level can be used as a replacement.
+
+### Accessibility
+
+Most of the user interface is placed in front of the user, while most of the
+sensors and wiring are placed on the side or back of the system. This allows
+the user to easily access the buttons and view the LCD display. In addition,
+the wiring is mostly organized to allow for easy rebuilding or modification of
+the circuit.
 
 # License (read me if you are a student)
 
