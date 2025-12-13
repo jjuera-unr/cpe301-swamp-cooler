@@ -161,7 +161,7 @@ void setup() {
 }
 
 void loop() {
-  my_delay(16384, 5);
+  my_delay(2048 , 5);
 
   waterLevel = adc_read(0);
   temperature = dht.readTemperature();
