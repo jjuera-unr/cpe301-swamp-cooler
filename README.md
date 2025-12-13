@@ -63,6 +63,11 @@ the motors to draw power from the microcontroller and potentially damage it.
 The system has the following states:
 
 - **Idle**: The system is powered on but not actively cooling.
+  - Transitions to **Idle** state only during initial power-on. This is an
+    implementation-specific detail where the state machine is designed so that
+    each state has enter logic that runs once upon entering the state. When the
+    system is powered on, it starts in the Idle state by default, but has to
+    enter the Idle state again to run the enter logic.
   - Transitions to **Running** state if temperature exceeds threshold and water
     level is sufficient.
   - Transitions to **Error** state if water level is too low.
@@ -97,6 +102,13 @@ Components used are described in the Components Used section above.
 ## System Demonstration
 
 Link will be provided soon.
+
+Addendum: the video demonstrates logging with real-time clock timestamps.
+However, it did not include the year/month/day. A new commit was added to
+include year/month/day in the log output. Here is an updated screenshot of the
+log output with the full date and time:
+
+![Updated Log Output](./images/addendum-datetime.png)
 
 # License (read me if you are a student)
 
