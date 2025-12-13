@@ -99,6 +99,9 @@ Pin startButton(PIN_C, DDR_C, 0);
 Pin resetButton(PIN_C, DDR_C, 2);
 Pin ventButton(PIN_C, DDR_C, 4);
 
+const int fanMotorPin = 2;
+int lastFanMotorValue = 0;
+
 float temperature;
 float temperatureThreshold = 25;
 int humidity;
@@ -123,6 +126,9 @@ typedef enum _State {
 } State;
 
 State currentState = IDLE;
+
+// forward declare so we can use default value
+void U0putint(int, int = 0);
 
 void setup() {
   //Serial.begin(9600);
@@ -154,6 +160,9 @@ void setup() {
   U0putstr("RTC time adjusted.\n");
 
   stepper.setSpeed(60);
+
+  // start at idle state
+  enterState(IDLE);
 
   // interrupt
 	PCICR  |=  (1 << PCIE1);
@@ -296,9 +305,6 @@ void loopState() {
   }
 }
 
-// forward declare so we can use default value
-void U0putint(int, int = 0);
-
 void toggleVent() {
   stepper.step(ventStep);
   U0puttimestamp(rtc.now());
@@ -309,11 +315,23 @@ void toggleVent() {
 }
 
 void stopMotor() {
-  // implement stop motor logic
+  if (lastFanMotorValue > 0) {
+    U0puttimestamp(rtc.now());
+    U0putstr("Fan motor disabled");
+  }
+  analogWrite(fanMotorPin, 0);
 }
 
 void startMotor() {
-  // start motor
+  if (lastFanMotorValue == 0) {
+    U0puttimestamp(rtc.now());
+    U0putstr("Fan motor enabled");
+  }
+  lastFanMotorValue = 100 + (int)(10 * (temperature - temperatureThreshold));
+  if (lastFanMotorValue > 160) {
+    lastFanMotorValue = 160;
+  }
+  analogWrite(fanMotorPin, lastFanMotorValue);
 }
 
 /** ISR for handling button presses **/
