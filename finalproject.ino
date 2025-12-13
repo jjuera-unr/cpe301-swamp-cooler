@@ -36,6 +36,10 @@ volatile unsigned char *PORT_C  = (unsigned char *) 0x28;
 volatile unsigned char *DDR_C   = (unsigned char *) 0x27;
 volatile unsigned char *PIN_C   = (unsigned char *) 0x26;
 
+volatile unsigned char *PORT_E = (unsigned char *)0x2B;
+volatile unsigned char *DDR_E  = (unsigned char *)0x2A;
+volatile unsigned char *PIN_E  = (unsigned char *)0x29;
+
 volatile unsigned char *myUCSR0A  = (unsigned char *) 0x00C0;
 volatile unsigned char *myUCSR0B  = (unsigned char *) 0x00C1;
 volatile unsigned char *myUCSR0C  = (unsigned char *) 0x00C2;
@@ -113,8 +117,8 @@ Pin yellowLed(PORT_B, DDR_B, 2);
 Pin greenLed(PORT_B, DDR_B, 1);
 Pin blueLed(PORT_B, DDR_B, 0);
 
-// buttons connected to pins 37, 35, 33
-Pin startButton(PIN_C, DDR_C, 0);
+// buttons connected to pins 3, 35, 33
+Pin startButton(PIN_E, DDR_E, 5);
 Pin resetButton(PIN_C, DDR_C, 2);
 Pin ventButton(PIN_C, DDR_C, 4);
 
@@ -145,7 +149,7 @@ typedef enum _State {
   ERROR
 } State;
 
-State currentState = IDLE;
+volatile State currentState = IDLE;
 
 // forward declare so we can use default value
 void U0putint(int, int = 0);
@@ -185,8 +189,7 @@ void setup() {
   enterState(IDLE);
 
   // interrupt
-	PCICR  |=  (1 << PCIE1);
-	PCMSK1 |=  (1 << PCINT10);
+  attachInterrupt(digitalPinToInterrupt(3), isrEnable, RISING);
 }
 
 void loop() {
@@ -298,7 +301,8 @@ void loopState() {
 
     case DISABLED:
       // button press to re-enable is handled in ISR
-      if (startButton.get()) {
+      if (startPressed) {
+        startPressed = false;
         enterState(IDLE);
         break;
       }
@@ -354,12 +358,10 @@ void startMotor() {
   analogWrite(fanMotorPin, lastFanMotorValue);
 }
 
-/** ISR for handling button presses **/
-ISR(PCINT1_vect) {
-  if (startButton.get()) {
-    if (currentState == DISABLED) {
-      enterState(IDLE);
-    }
+/** ISR for start button press **/
+void isrEnable() {
+  if (currentState == DISABLED) {
+    startPressed = true;
   }
 }
 
