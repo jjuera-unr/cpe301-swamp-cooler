@@ -114,6 +114,26 @@ Components used are described in the Components Used section above.
 
 ## System Demonstration
 
+### System Operation Images
+
+In idle state:
+
+![](./images/idle.png)
+
+In running state, with the fan running:
+
+![](./images/running.png)
+
+In disabled state, with the fan off:
+
+![](./images/disabled.png)
+
+In error state, with the low water level warning:
+
+![](./images/error.png)
+
+### Video Demonstration
+
 Below is a video demonstration of the swamp cooler system in operation:
 
 <https://drive.google.com/file/d/1CNwVBzageFXINSoOLmAduGrb4Q404aej/view?usp=sharing>
