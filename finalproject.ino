@@ -337,7 +337,7 @@ void toggleVent() {
 void stopMotor() {
   if (lastFanMotorValue > 0) {
     U0puttimestamp(rtc.now());
-    U0putstr("Fan motor disabled");
+    U0putstr("Fan motor disabled\n");
   }
   analogWrite(fanMotorPin, 0);
 }
@@ -345,7 +345,7 @@ void stopMotor() {
 void startMotor() {
   if (lastFanMotorValue == 0) {
     U0puttimestamp(rtc.now());
-    U0putstr("Fan motor enabled");
+    U0putstr("Fan motor enabled\n");
   }
   lastFanMotorValue = 100 + (int)(10 * (temperature - temperatureThreshold));
   if (lastFanMotorValue > 160) {
@@ -444,6 +444,12 @@ void U0putstate(State state) {
 
 void U0puttimestamp(DateTime dt) {
   U0putchar('[');
+  U0putint(dt.year(), 2);
+  U0putchar('-');
+  U0putint(dt.month(), 2);
+  U0putchar('-');
+  U0putint(dt.day(), 2);
+  U0putchar(' ');
   U0putint(dt.hour(), 2);
   U0putchar(':');
   U0putint(dt.minute(), 2);
