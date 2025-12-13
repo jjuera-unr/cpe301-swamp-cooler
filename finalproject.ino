@@ -103,7 +103,7 @@ const int fanMotorPin = 2;
 int lastFanMotorValue = 0;
 
 float temperature;
-float temperatureThreshold = 25;
+float temperatureThreshold = 27;
 int humidity;
 int waterLevel;
 int waterLevelThreshold = 270;
@@ -113,7 +113,8 @@ RTC_DS1307 rtc;
 
 // 1 minute delay for LCD update
 unsigned long lastUpdate = 0;
-unsigned long updateInterval = 1000 * 5;
+bool forceLCD = true;
+unsigned long updateInterval = 1000 * 60;
 
 /**
  * State machine states
@@ -292,7 +293,7 @@ void loopState() {
 
       // if reset button is pressed, go back to IDLE
       if (resetButton.get()) {
-        lastUpdate = 0; // force LCD update
+        forceLCD = true; // force lcd update
         enterState(IDLE);
         break;
       }
@@ -474,13 +475,15 @@ void my_delay(unsigned short ticks, unsigned char prescaler) {
 }
 
 void updateLCD() {
+  // cast to signed long so negative arithmetic works
   unsigned long currentTime = millis();
 
-  if (currentTime < lastUpdate + updateInterval) {
+  if (currentTime < lastUpdate + updateInterval && !forceLCD) {
     return;
   }
 
   lastUpdate = currentTime;
+  forceLCD = false;
 
   lcd.clear();
   lcd.setCursor(0, 0);
