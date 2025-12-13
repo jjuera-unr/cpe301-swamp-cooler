@@ -106,7 +106,7 @@ float temperature;
 float temperatureThreshold = 25;
 int humidity;
 int waterLevel;
-int waterLevelThreshold = 120;
+int waterLevelThreshold = 270;
 int ventStep = STEPS_PER_REVOLUTION / 8; // 45 degree vent movement
 
 RTC_DS1307 rtc;
