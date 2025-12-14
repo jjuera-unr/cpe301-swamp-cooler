@@ -18,9 +18,6 @@ accordingly. It has an LCD screen to display the temperature and humidity of
 the past minute, as well as the current system status. It also logs data with
 timestamps using a real-time clock module through the serial monitor.
 
-If you are a student looking to study or reuse parts of this code, please read
-the License section at the bottom of this document.
-
 ## Components Used
 
 - **Microcontroller**: [Arduino Atmega2560](https://www.arduino.cc/en/Main/ArduinoBoardMega2560)
@@ -207,75 +204,3 @@ the user to easily access the buttons and view the LCD display. In addition,
 the wiring is mostly organized to allow for easy rebuilding or modification of
 the circuit.
 
-# License (read me if you are a student)
-
-This project is licensed under the GPLv3 (or later) license. You are encouraged
-to study and learn from this code.
-
-If you copy, modify, or distribute any part of this project, you are required
-to comply with the terms of the GPLv3 license. This includes preserving the
-original copyright notice and providing access to the source code of any
-derivative works.
-
-This is to encourage open sharing of knowledge while discouraging any bad-faith
-copying of the code. Because this license requires that derivative works
-preserve the copyright notice, it will be clear if this code has been copied as
-an attempt of plagiarism; otherwise, failure to preserve the copyright notice
-would constitute a violation of the license. This still allows for modification
-and learning, as independent adaptations and reimplementations from studying
-the code are permitted by both the license and academic integrity policies.
-
-You are free to modify and adapt this code (whether in part or in whole) as you
-see fit, provided that any distributed derivative works remain licensed under
-the GPLv3+ and include the appropriate attribution and license text.
-
-An example of proper attribution of part of this code, such as reusing the
-print integer function (`U0putint(int)` in the source) in your own code, would
-be:
-
-```c
-/*
- * U0putint function
- * 
- * Originally written by Justin Juera
- * Source: https://github.com/jjuera-unr/cpe301-swamp-cooler
- * Licensed under GPLv3 or later
- *
- * This function has been reused here with attribution in accordance
- * with the original license.
- */
-void U0putint(int, int = 0);
-void U0putint(int value, int leadingZeros) {
-    // render negative numbers correctly by prepending negative sign and printing
-    // as positive
-    if (value < 0) {
-        U0putchar('-');
-        value = -value;
-    }
-
-    const char digits[] = "0123456789";
-    int temp = value;
-    int count = 0;
-
-    // count number of digits for leading zeros
-    if (temp == 0) {
-        count = 1;
-    } else {
-        while (temp > 0) {
-            temp /= 10;
-            count++;
-        }
-    }
-
-    while (leadingZeros > count) {
-        U0putchar('0');
-        leadingZeros--;
-    }
-
-    if (value >= 10) {
-        U0putint(value / 10, 0);
-    }
-
-    U0putchar(digits[value % 10]);
-}
-```
